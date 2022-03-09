@@ -6,13 +6,13 @@
 
 <body>
 	<input id="name" type="text" />
-	<button id="connect" onclick="connect()">連線</button>
+	<button id="connect" onclick="connectWebsocket()">連線</button>
 	
 	<br>
 	<br>
 	<br>
 	
-	<select id="to">
+	To : <select id="to">
 	</select>
 	<input id="input" type="text" />
 	<button id="send" disabled>Send</button>
@@ -21,92 +21,95 @@
 </body>
 
 <script type="text/javascript">
+const send = document.getElementById("send");
+const close = document.getElementById("close");
+const connect = document.getElementById("connect");
+const name = document.getElementById("name");
+const input = document.getElementById("input");
+const message = document.getElementById("message");
+const to = document.getElementById("to");
 var websocket = null;
 
-const connect = () => {
-	const send = document.getElementById("send");
-	const close = document.getElementById("close");
-	const connect = document.getElementById("connect");
-	const name = document.getElementById("name");
-	const input = document.getElementById("input");
-	const message = document.getElementById("message");
-	const to = document.getElementById("to");
-	
+const connectWebsocket = () => {
 	//判斷當前瀏覽器是否支援 WebSocket
-	if('WebSocket' in window){
-		
-		websocket = new WebSocket("ws://localhost:8081/chatroom/"+name.value);
-	  	
-		//連線發生錯誤時觸發的方法
-		websocket.addEventListener('error', (event) => {
-			setMessageInnerHTML("error");
-		});
-		
-		//連線成功建立的時觸發
-		websocket.addEventListener('open', (event) => {
-			send.disabled = false;
-			close.disabled = false;
-			connect.disabled = true;
-			name.disabled = true;
-		
-		  	alert("websocket 連線成功!!!");
-		});
-		
-		//接收到訊息時觸發
-		websocket.addEventListener('message', (event) => {
-			let json = JSON.parse(event.data);
-			console.log(json);
-			
-			if(json.type === 'open' || json.type === 'close'){
-				to.innerHTML = '';
-				
-				let optAll = document.createElement('option');
-				optAll.value = 'all';
-				optAll.innerHTML = 'all';
-			    to.appendChild(optAll);
-			    
-				json.users.forEach(s => {
-					let opt = document.createElement('option');
-				    opt.value = s;
-				    opt.innerHTML = s;
-				    to.appendChild(opt);
-				});
-				setMessageInnerHTML("<font color='red'>"+json.msg+"</font>");
-			} else setMessageInnerHTML(json.msg);
-			
-		});
-		
-		//連線關閉時觸發
-		websocket.addEventListener('close', function(){
-			alert('連線關閉，咱們下次見~');
-		});
-		
-		//監聽視窗關閉事件，當視窗關閉時，主動關閉websocket連線，防止連線還沒關閉就關閉視窗，server端會拋異常。
-		window.onbeforeunload = function(){
-			websocket.close();
-		}
-		
-		//將訊息顯示到網頁上
-		function setMessageInnerHTML(msg){
-			message.innerHTML += msg + '<br/>';
-		}
-		
-		//關閉websocket連線
-		close.addEventListener('click', () => {
-			websocket.close();
-		});
-		
-		//發送消息
-		send.addEventListener('click', () => {
-			websocket.send(JSON.stringify({
-				to : to.value,
-				msg : input.value
-			}));
-		});
-	}else{
-		alert('Not support websocket')
+	if(!'WebSocket' in window){
+		alert('Not support websocket');
+		return false;
 	}
+		
+	websocket = new WebSocket("ws://localhost:8081/chatroom/"+name.value);
+	
+	//連線成功建立的時觸發
+	websocket.addEventListener('open', (event) => {
+		send.disabled = false;
+		close.disabled = false;
+		connect.disabled = true;
+		name.disabled = true;
+	
+	  	alert("websocket 連線成功!!!");
+	});
+	
+	//接收到訊息時觸發
+	websocket.addEventListener('message', (event) => {
+		let json = JSON.parse(event.data);
+
+		if(json.type === 'open' || json.type === 'close'){
+			to.innerHTML = '';
+			
+			let optAll = document.createElement('option');
+			optAll.value = 'all';
+			optAll.innerHTML = 'all';
+		    to.appendChild(optAll);
+		    
+			json.users.forEach(s => {
+				let opt = document.createElement('option');
+			    opt.value = s;
+			    opt.innerHTML = s;
+			    to.appendChild(opt);
+			});
+			setMessageInnerHTML("<font color='red'>"+json.msg+"</font>");
+		} else setMessageInnerHTML(json.msg);
+		
+	});
+	
+	//連線關閉時觸發
+	websocket.addEventListener('close', function(){
+		alert('連線關閉，咱們下次見~');
+	});
+	
+	//連線發生錯誤時觸發的方法
+	websocket.addEventListener('error', (event) => {
+		setMessageInnerHTML("error");
+	});
+
 }  
 
+//監聽視窗關閉事件，當視窗關閉時，主動關閉websocket連線，防止連線還沒關閉就關閉視窗，server端會拋異常。
+window.onbeforeunload = function(){
+	websocket.close();
+}
+
+//將訊息顯示到網頁上
+function setMessageInnerHTML(msg){
+	message.innerHTML += msg + '<br/>';
+}
+
+//關閉websocket連線
+close.addEventListener('click', () => {
+	websocket.close();
+	
+	send.disabled = true;
+	close.disabled = true;
+	connect.disabled = false;
+	name.disabled = false;
+});
+
+//發送消息
+send.addEventListener('click', () => {
+	websocket.send(JSON.stringify({
+		to : to.value,
+		msg : input.value
+	}));
+});
 </script>
 </html>

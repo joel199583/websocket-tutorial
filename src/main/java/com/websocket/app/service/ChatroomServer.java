@@ -2,7 +2,6 @@ package com.websocket.app.service;
 
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.websocket.app.bean.ChatBean;
 
@@ -10,9 +9,7 @@ import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -37,8 +34,8 @@ public class ChatroomServer {
     public void onOpen(Session session, @PathParam(value = "name") String userName) throws Exception{
         sessionPools.put(userName, session);
         addOnlineCount();
-        System.out.println(userName + "加入webSocket！當前人數為 " + online);
-		sessionPools.forEach((k, v) -> {
+        System.out.println(userName + "加入webSocket！當前人數為" + online);
+		sessionPools.forEach((k, otherSession) -> {
 			
 	
 			ChatBean bean = new ChatBean();
@@ -48,11 +45,7 @@ public class ChatroomServer {
 									  .collect(Collectors.toSet()));
 			bean.setType("open");
 			bean.setMsg("歡迎 " + userName + " 加入聊天！");
-			try {
-				sendMessage(v, new ObjectMapper().writeValueAsString(bean));
-			} catch (JsonProcessingException e) {
-				e.printStackTrace();
-			}
+			sendMessage(otherSession, bean);	
 		});
     }
 
@@ -65,7 +58,7 @@ public class ChatroomServer {
         sessionPools.remove(userName);
         subOnlineCount();
         System.out.println(userName + "關閉webSocket連線！當前人数為" + online);
-        sessionPools.forEach((k, v) -> {
+        sessionPools.forEach((k, session) -> {
 			ChatBean bean = new ChatBean();
 			bean.setUsers(sessionPools.keySet()
 									  .stream()
@@ -73,11 +66,7 @@ public class ChatroomServer {
 									  .collect(Collectors.toSet()));
 			bean.setType("close");
 			bean.setMsg(userName + " 離開聊天！");
-			try {
-				sendMessage(v, new ObjectMapper().writeValueAsString(bean));
-			} catch (JsonProcessingException e) {
-				e.printStackTrace();
-			}
+			sendMessage(session, bean);
 		});
     }
 
@@ -88,28 +77,20 @@ public class ChatroomServer {
      */
     @OnMessage
     public void onMessage(@PathParam(value = "name") String fromUser, String jsonString) throws IOException{
-    	ChatBean content = new ObjectMapper().readValue(jsonString, ChatBean.class);
+    	ChatBean chatContent = new ObjectMapper().readValue(jsonString, ChatBean.class);
     	
-    	if("all".equals(content.getTo())) {
+    	if("all".equals(chatContent.getTo())) {
     		sessionPools.forEach((key, session) -> {
     			ChatBean rtnBean = new ChatBean();
     			rtnBean.setType("sendMsg");
-    			rtnBean.setMsg("(全體)" + fromUser + " : " + content.getMsg());
-    			try {
-					sendMessage(session, new ObjectMapper().writeValueAsString(rtnBean));
-				} catch (JsonProcessingException e) {
-					e.printStackTrace();
-				}
+    			rtnBean.setMsg("(全體)" + fromUser + " : " + chatContent.getMsg());
+    			sendMessage(session, rtnBean);
             });
     	} else {
     		ChatBean rtnBean = new ChatBean();
 			rtnBean.setType("sendMsg");
-			rtnBean.setMsg("(悄悄話)" + fromUser + " : " + content.getMsg());
-			try {
-				sendMessage(sessionPools.get(content.getTo()), new ObjectMapper().writeValueAsString(rtnBean));
-			} catch (JsonProcessingException e) {
-				e.printStackTrace();
-			}
+			rtnBean.setMsg("(悄悄話)" + fromUser + " : " + chatContent.getMsg());
+			sendMessage(sessionPools.get(chatContent.getTo()), rtnBean);
     	}
     }
 
@@ -133,7 +114,23 @@ public class ChatroomServer {
     public void sendMessage(Session session, String message) {
         if(session != null){
         	try {
-        		session.getBasicRemote().sendText(message);
+        		session.getBasicRemote().sendText(message);;
+            } catch(IOException e){
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    /**
+     * 發送訊息(傳送內容為 自訂義物件 ChatBean)
+     * @param session 客戶端與伺服器端建立的連線
+     * @param message 訊息
+     * @throws IOException
+     */
+    public void sendMessage(Session session, ChatBean chatBean) {
+    	if(session != null){
+        	try {
+        		session.getBasicRemote().sendText(new ObjectMapper().writeValueAsString(chatBean));;
             } catch(IOException e){
                 e.printStackTrace();
             }
