@@ -37,7 +37,7 @@ public class ChatroomServer {
     public void onOpen(Session session, @PathParam(value = "name") String userName) throws Exception{
         sessionPools.put(userName, session);
         addOnlineCount();
-        System.out.println(userName + "加入webSocket！當前人數為" + online);
+        System.out.println(userName + "加入webSocket！當前人數為 " + online);
 		sessionPools.forEach((k, v) -> {
 			
 	
