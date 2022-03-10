@@ -22,7 +22,7 @@ public class ChatroomServer {
     //用来紀錄當前再線人數。應注意需是執行緒安全的。
     private static AtomicInteger online = new AtomicInteger();
 
-    //concurrent包的執行續安全Map，用来存放每個客户端對應的連線。websocket container
+    //concurrent包的執行緒安全Map，用来存放每個客户端對應的連線。websocket container
     private static Map<String, Session> sessionPools = new ConcurrentHashMap<>();
     
     /**
@@ -92,6 +92,7 @@ public class ChatroomServer {
 			rtnBean.setType("dm");
 			rtnBean.setFrom(fromUser);
 			rtnBean.setMsg(chatContent.getMsg());
+			//如果被私訊者還在線上
 			if(sessionPools.containsKey(chatContent.getTo())) {
 				sendMessage(sessionPools.get(chatContent.getTo()), rtnBean); //推給你私訊的人
 				sendMessage(sessionPools.get(fromUser), rtnBean); //推給自己
@@ -133,7 +134,7 @@ public class ChatroomServer {
     /**
      * 發送訊息(傳送內容為 自訂義物件 ChatBean)
      * @param session 客戶端與伺服器端建立的連線
-     * @param message 訊息
+     * @param chatBean 回傳內容
      * @throws IOException
      */
     public void sendMessage(Session session, ChatBean chatBean) {
