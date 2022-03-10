@@ -123,11 +123,7 @@ public class ChatroomServer {
      */
     public void sendMessage(Session session, String message) {
         if(session != null){
-        	try {
-        		session.getBasicRemote().sendText(message);;
-            } catch(IOException e){
-                e.printStackTrace();
-            }
+        	session.getAsyncRemote().sendText(message);;
         }
     }
     
@@ -140,7 +136,7 @@ public class ChatroomServer {
     public void sendMessage(Session session, ChatBean chatBean) {
     	if(session != null){
         	try {
-        		session.getBasicRemote().sendText(new ObjectMapper().writeValueAsString(chatBean));;
+        		session.getAsyncRemote().sendText(new ObjectMapper().writeValueAsString(chatBean));;
             } catch(IOException e){
                 e.printStackTrace();
             }
