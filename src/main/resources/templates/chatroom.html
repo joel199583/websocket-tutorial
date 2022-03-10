@@ -68,7 +68,13 @@ const connectWebsocket = () => {
 			    to.appendChild(opt);
 			});
 			setMessageInnerHTML("<font color='red'>"+json.msg+"</font>");
-		} else setMessageInnerHTML(json.msg);
+		} else if(json.type === 'all'){ //群發
+			setMessageInnerHTML(json.from + " : " + json.msg);
+		} else if(json.type === 'dm'){ //私訊
+			setMessageInnerHTML("<font color='green'>"+ json.from + " : " + json.msg + "</font>");
+		} else {
+			setMessageInnerHTML("<font color='red'>"+json.msg+"</font>");
+		};
 		
 	});
 	

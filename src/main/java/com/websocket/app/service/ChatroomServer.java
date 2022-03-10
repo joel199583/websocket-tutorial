@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class ChatroomServer {
 
 
-    //静态变量，用来记录当前在线连接数。应该把它设计成线程安全的。
+    //用来紀錄當前再線人數。應注意需是執行緒安全的。
     private static AtomicInteger online = new AtomicInteger();
 
     //concurrent包的執行續安全Map，用来存放每個客户端對應的連線。websocket container
@@ -82,15 +82,24 @@ public class ChatroomServer {
     	if("all".equals(chatContent.getTo())) {
     		sessionPools.forEach((key, session) -> {
     			ChatBean rtnBean = new ChatBean();
-    			rtnBean.setType("sendMsg");
-    			rtnBean.setMsg("(全體)" + fromUser + " : " + chatContent.getMsg());
+    			rtnBean.setType("all");
+    			rtnBean.setFrom(fromUser);
+    			rtnBean.setMsg(chatContent.getMsg());
     			sendMessage(session, rtnBean);
             });
     	} else {
     		ChatBean rtnBean = new ChatBean();
-			rtnBean.setType("sendMsg");
-			rtnBean.setMsg("(悄悄話)" + fromUser + " : " + chatContent.getMsg());
-			sendMessage(sessionPools.get(chatContent.getTo()), rtnBean);
+			rtnBean.setType("dm");
+			rtnBean.setFrom(fromUser);
+			rtnBean.setMsg(chatContent.getMsg());
+			if(sessionPools.containsKey(chatContent.getTo())) {
+				sendMessage(sessionPools.get(chatContent.getTo()), rtnBean); //推給你私訊的人
+				sendMessage(sessionPools.get(fromUser), rtnBean); //推給自己
+			} else {
+				rtnBean.setType("miss");
+				rtnBean.setMsg(chatContent.getTo() + " 已離線");
+				sendMessage(sessionPools.get(fromUser), rtnBean);
+			}
     	}
     }
 

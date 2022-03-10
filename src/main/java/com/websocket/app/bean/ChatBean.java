@@ -2,18 +2,21 @@ package com.websocket.app.bean;
 
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-
 public class ChatBean {
-	@Override
-	public String toString() {
-		return "ChatBean [to=" + to + ", type=" + type + ", users=" + users + ", msg=" + msg + "]";
-	}
 
+	private String from;
 	private String to;
 	private String type;
 	private Set<String> users;
 	private String msg;
+
+	public String getFrom() {
+		return from;
+	}
+
+	public void setFrom(String from) {
+		this.from = from;
+	}
 
 	public String getMsg() {
 		return msg;
@@ -45,5 +48,10 @@ public class ChatBean {
 
 	public void setUsers(Set<String> users) {
 		this.users = users;
+	}
+
+	@Override
+	public String toString() {
+		return "ChatBean [from=" + from + ", to=" + to + ", type=" + type + ", users=" + users + ", msg=" + msg + "]";
 	}
 }
