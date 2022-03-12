@@ -11,11 +11,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
+
+/*
+* @ServerEndpoint 註解是一個類層次的註解，它的功能主要是將目前的類定義成一個websocket伺服器端,
+* 客戶端可以通過這個URL來連線到WebSocket伺服器端
+*/
 @ServerEndpoint(value = "/socket/{name}")
 public class WebSocketServer {
 
 
-    //静态变量，用来记录当前在线连接数。应该把它设计成线程安全的。
+    //靜態變數，用來記錄當前線上連線數。應該把它設計成執行緒安全的。
     private static AtomicInteger online = new AtomicInteger();
 
     //concurrent包的執行續安全Map，用来存放每個客户端對應的連線。websocket 容器

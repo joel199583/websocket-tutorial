@@ -15,6 +15,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Component
+
+/*
+*@ServerEndpoint 註解是一個類層次的註解，它的功能主要是將目前的類定義成一個websocket伺服器端,
+* 客戶端可以通過這個URL來連線到WebSocket伺服器端
+*/
 @ServerEndpoint(value = "/chatroom/{name}")
 public class ChatroomServer {
 
