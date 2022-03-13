@@ -7,14 +7,9 @@
 <body>
 	<input id="name" type="text" />
 	<button id="connect" onclick="connect()">連線</button>
-	
-	<br>
-	<br>
-	<br>
-	
-	<input id="input" type="text" />
-	<button id="send" disabled>Send</button>
 	<button id="close" disabled>Close</button>
+	<br>
+
 	<div id="message"></div>
 </body>
 
@@ -22,11 +17,9 @@
 var websocket = null;
 
 const connect = () => {
-	const send = document.getElementById("send");
 	const close = document.getElementById("close");
 	const connect = document.getElementById("connect");
 	const name = document.getElementById("name");
-	const input = document.getElementById("input");
 	const message = document.getElementById("message");
 	
 	//判斷當前瀏覽器是否支援 WebSocket
@@ -41,7 +34,6 @@ const connect = () => {
 		
 		//連線成功建立的時觸發
 		websocket.addEventListener('open', (event) => {
-			send.disabled = false;
 			close.disabled = false;
 			connect.disabled = true;
 			name.disabled = true;
@@ -72,12 +64,12 @@ const connect = () => {
 		//關閉websocket連線
 		close.addEventListener('click', () => {
 			websocket.close();
+			
+			close.disabled = true;
+			connect.disabled = false;
+			name.disabled = false;
 		});
 		
-		//發送消息
-		send.addEventListener('click', () => {
-			websocket.send(input.value);
-		});
 	}else{
 		alert('Not support websocket')
 	}

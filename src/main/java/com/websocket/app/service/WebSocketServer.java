@@ -1,27 +1,24 @@
 package com.websocket.app.service;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
-
 /*
 * @ServerEndpoint 註解是一個類層次的註解，它的功能主要是將目前的類定義成一個websocket伺服器端,
 * 客戶端可以通過這個URL來連線到WebSocket伺服器端
 */
 @ServerEndpoint(value = "/socket/{name}")
 public class WebSocketServer {
-
-
-    //靜態變數，用來記錄當前線上連線數。應該把它設計成執行緒安全的。
-    private static AtomicInteger online = new AtomicInteger();
 
     //concurrent包的執行續安全Map，用来存放每個客户端對應的連線。websocket 容器
     private static Map<String, Session> sessionPools = new ConcurrentHashMap<>();
@@ -34,13 +31,6 @@ public class WebSocketServer {
     @OnOpen
     public void onOpen(Session session, @PathParam(value = "name") String userName){
         sessionPools.put(userName, session);
-        addOnlineCount();
-        System.out.println(userName + "加入webSocket！當前人數為" + online);
-        try {
-            sendMessage(session, "歡迎" + userName + "加入连接！");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -50,8 +40,6 @@ public class WebSocketServer {
     @OnClose
     public void onClose(@PathParam(value = "name") String userName){
         sessionPools.remove(userName);
-        subOnlineCount();
-        System.out.println(userName + "關閉webSocket連線！當前人数為" + online);
     }
 
     /**
@@ -63,7 +51,7 @@ public class WebSocketServer {
     public void onMessage(@PathParam(value = "name") String userName, String message) throws IOException{
     	sessionPools.forEach((key, session) -> {
             try {
-                sendMessage(session, userName + " : " + message);
+            	session.getBasicRemote().sendText( userName + " : " + message);
             } catch(Exception e){
                 e.printStackTrace();
             }
@@ -81,38 +69,14 @@ public class WebSocketServer {
         throwable.printStackTrace();
     }
     
-    /**
-     * 發送訊息
-     * @param session 客戶端與伺服器端建立的連線
-     * @param message 訊息
-     * @throws IOException
-     */
-    public void sendMessage(Session session, String message) throws IOException{
-        if(session != null){
-            session.getBasicRemote().sendText(message);
-        }
-    }
-
-    /**
-     * 给指定用户發送消息
-     * @param userName 用户名
-     * @param message 消息
-     * @throws IOException
-     */
-    public void sendInfo(String fromUser, String userName, String message){
-        Session session = sessionPools.get(userName);
-        try {
-            sendMessage(session, "來自 " + userName + " 的訊息:" + message);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    public static void addOnlineCount(){
-        online.incrementAndGet();
-    }
-
-    public static void subOnlineCount() {
-        online.decrementAndGet();
+    @Scheduled(fixedRate = 2000) // fixedRate = 2000 表示當前方法開始執行 2000ms(2秒鐘) 後，Spring scheduling會再次呼叫該方法
+    public void serverPushNotification() {
+    	sessionPools.forEach((key, session) -> {
+            try {
+            	session.getBasicRemote().sendText(new SimpleDateFormat("HH:mm:ss").format(new Date()));
+            } catch(Exception e){
+                e.printStackTrace();
+            }
+        });
     }
 }
