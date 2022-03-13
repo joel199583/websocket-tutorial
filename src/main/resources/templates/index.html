@@ -5,7 +5,6 @@
 </head>
 
 <body>
-	<input id="name" type="text" />
 	<button id="connect" onclick="connect()">連線</button>
 	<button id="close" disabled>Close</button>
 	<br>
@@ -19,13 +18,12 @@ var websocket = null;
 const connect = () => {
 	const close = document.getElementById("close");
 	const connect = document.getElementById("connect");
-	const name = document.getElementById("name");
 	const message = document.getElementById("message");
 	
 	//判斷當前瀏覽器是否支援 WebSocket
 	if('WebSocket' in window){
 		
-		websocket = new WebSocket("ws://localhost:8081/socket/"+name.value);
+		websocket = new WebSocket("ws://localhost:8081/socket");
 	  	
 		//連線發生錯誤時觸發的方法
 		websocket.addEventListener('error', (event) => {
@@ -36,7 +34,6 @@ const connect = () => {
 		websocket.addEventListener('open', (event) => {
 			close.disabled = false;
 			connect.disabled = true;
-			name.disabled = true;
 		
 		  	alert("websocket 連線成功!!!");
 		});
@@ -67,7 +64,6 @@ const connect = () => {
 			
 			close.disabled = true;
 			connect.disabled = false;
-			name.disabled = false;
 		});
 		
 	}else{
