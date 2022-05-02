@@ -2,6 +2,8 @@ package com.websocket.app.config;
 
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.boot.task.TaskSchedulerBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,12 +38,15 @@ public class WebSocketConfigTwo implements WebSocketConfigurer {
 		@Override
 		public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
 				WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
-			System.out.println("前置拦截~~");
+			System.out.println("beforeHandshake");
 			if (!(request instanceof ServletServerHttpRequest))
 				return true;
-//            HttpServletRequest servletRequest = ((ServletServerHttpRequest) request).getServletRequest();
-//            String userName = (String) servletRequest.getSession().getAttribute("userName");
-			String userName = "Koishipyb";
+            HttpServletRequest servletRequest = ((ServletServerHttpRequest) request).getServletRequest();
+            String userName = (String) servletRequest.getParameter("name");
+            if(userName == null) {
+            	System.out.println("no userName error");
+            	return false;
+            }
 			attributes.put("userName", userName);
 			
 			return true;
@@ -50,7 +55,7 @@ public class WebSocketConfigTwo implements WebSocketConfigurer {
 		@Override
 		public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler,
 				Exception exception) {
-			System.out.println("后置拦截~~");
+			System.out.println("afterHandshake");
 		}
 	}
 	

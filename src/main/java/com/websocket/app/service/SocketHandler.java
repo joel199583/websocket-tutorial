@@ -1,15 +1,20 @@
 package com.websocket.app.service;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 
+@Service
 public class SocketHandler implements WebSocketHandler {
 	
 	private static final Map<String, WebSocketSession> SESSIONS = new ConcurrentHashMap<>();
@@ -18,7 +23,7 @@ public class SocketHandler implements WebSocketHandler {
 	public void afterConnectionEstablished(WebSocketSession session) throws Exception {
 		String userName = session.getAttributes().get("userName").toString();
 		SESSIONS.put(userName, session);
-		System.out.println(String.format("成功建立连接~ userName: %s", userName));
+		System.out.println(String.format("Welcome %s", userName));
 	}
 
 	@Override
@@ -37,6 +42,7 @@ public class SocketHandler implements WebSocketHandler {
 
 	@Override
 	public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
+		SESSIONS.remove(session.getUri().getQuery().replace("name=", ""));
 		System.out.println("连接已关闭,status:" + closeStatus);
 	}
 
@@ -60,7 +66,15 @@ public class SocketHandler implements WebSocketHandler {
 			e.printStackTrace();
 		}
 	}
-
+	
+	@Scheduled(fixedRate = 2000) // fixedRate = 2000 表示當前方法開始執行 2000ms(2秒鐘) 後，Spring scheduling會再次呼叫該方法
+    public static void serverPushNotification() {
+		System.out.println(SESSIONS);
+		SESSIONS.forEach((k, session) -> {
+        	sendMessage(k, "Hi " + k + " 現在時間 : " + new SimpleDateFormat("HH:mm:ss").format(new Date()));
+        });
+    }
+	
 	/**
 	 * 群发消息
 	 *
