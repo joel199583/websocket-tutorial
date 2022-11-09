@@ -43,7 +43,7 @@ public class SocketHandler implements WebSocketHandler {
 	@Override
 	public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
 		SESSIONS.remove(session.getUri().getQuery().replace("name=", ""));
-		System.out.println("连接已关闭,status:" + closeStatus);
+		System.out.println("连接已關閉,status:" + closeStatus);
 	}
 
 	@Override
