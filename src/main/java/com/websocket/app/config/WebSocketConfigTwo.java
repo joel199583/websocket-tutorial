@@ -27,7 +27,7 @@ public class WebSocketConfigTwo implements WebSocketConfigurer {
 	public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
 		registry.addHandler(new SocketHandler(), "/socket2")// 设置连接路径和處理
 				.setAllowedOrigins("*")
-				.addInterceptors(new MyWebSocketInterceptor());// 设置拦截器
+				.addInterceptors(new MyWebSocketInterceptor());// 设置攔截器
 	}
 
 	/**
