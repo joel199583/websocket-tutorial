@@ -2,6 +2,8 @@ package com.websocket.app.service;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -69,7 +71,7 @@ public class SocketHandler implements WebSocketHandler {
 	
 	@Scheduled(fixedRate = 2000) // fixedRate = 2000 表示當前方法開始執行 2000ms(2秒鐘) 後，Spring scheduling會再次呼叫該方法
     public static void serverPushNotification() {
-		System.out.println(SESSIONS);
+		System.out.println("現在時間" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")));
 		SESSIONS.forEach((k, session) -> {
         	sendMessage(k, "Hi " + k + " 現在時間 : " + new SimpleDateFormat("HH:mm:ss").format(new Date()));
         });

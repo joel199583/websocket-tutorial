@@ -32,7 +32,7 @@ public class WebSocketServer {
         sessionPools.add(session);
     }
     
-    @Scheduled(fixedRate = 2000) // fixedRate = 2000 表示當前方法開始執行 2000ms(2秒鐘) 後，Spring scheduling會再次呼叫該方法
+    //@Scheduled(fixedRate = 2000) // fixedRate = 2000 表示當前方法開始執行 2000ms(2秒鐘) 後，Spring scheduling會再次呼叫該方法
     public void serverPushNotification() {
     	sessionPools.forEach(session -> {
             try {
